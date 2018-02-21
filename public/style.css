@@ -1,0 +1,89 @@
+body {
+  padding: 2em;
+}
+
+a {
+  color: #00B7FF;
+}
+
+span {
+	word-break: break-all;
+}
+
+tbody {
+	margin-top: 1em;
+}
+
+span.out {
+	padding: 5em;
+	font-family: Courier New; monospace;
+}
+
+.hidden {
+	display : none;
+}
+
+.clickable {
+	cursor: pointer;
+}
+
+div.well {
+	margin-top: 1em;
+}
+
+div.modal-header {
+	margin-bottom: 1em;
+}
+
+button.btn {
+	background-color: #ffffff;
+	color: #000000;
+}
+
+.flavor {
+	display: inline-block;
+	letter-spacing: 3px;
+	padding: 3px;
+	margin: 3px;
+}
+
+#play {
+	background-color: #1E90FF;
+	color: #F8F8FF;
+}
+
+#editModal {
+	position: absolute;
+	top : 0;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.container {
+	display: flex;
+	justify-content: space-between;
+}
+
+.form {
+	letter-spacing : 3px;
+	padding : 3px;
+	margin : 3px;
+	display : inline-block;
+}
+
+#word_color {
+	width: 50px;
+}
+
+#guess_color {
+	width: 50px;
+}
+
+#fore_color {
+	width: 50px;
+}
+
+#selecter {
+	width: 100%;
+}

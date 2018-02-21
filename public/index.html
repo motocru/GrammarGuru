@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Grammar Guru</title>
+		<!--Bootstrap insert-->
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+		<!-- jQuery library -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<!-- Latest compiled JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta charset="UTF-8">
+		<!--include for CSS file below-->
+		<link rel="stylesheet" href="style.css">
+		<script src="app.js"></script>
+		<!--<script src="jquery-3.3.1.min.js"></script>-->
+		<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js"></script>
+	</head>
+	<body>
+		<div class="container">
+			<div id="game">
+				<!--input well starts here-->
+				<div class="well well-sm">
+					<form class="form-inline">
+						<div class="container">
+							<!--Font dropdown group starts here-->
+							<div class="form-group" id="font_box">
+								<label for="fonts"><strong>Font</strong> </label>
+								<select class="form-control" name="font_list" id="fonts">
+								</select>
+							</div>
+							<!--Font dropdown group ends here-->
+							<!--difficulty dropdown group starts here-->
+							<div class="form-group" id="diff_box">
+								<label for="diffs"><strong>Level</strong> </label>
+								<select class="form-control" name="diff_list" id="diffs">
+								</select>
+							</div>
+							<!--difficulty dropdown group ends here-->
+							<!--Color button group starts below-->
+							<div class="input-group">
+								<span class="input-group-addon" id="color1">Word </span>
+								<input type="color" id="word_color" class="form-control" aria-describedby="color1">
+							</div>
+							<div class="input-group">
+								<span class="input-group-addon" id="color2">Guess</span>
+								<input type="color" id="guess_color" class="form-control" aria-describedby="color2">
+							</div>
+							<div class="input-group">
+								<span class="input-group-addon" id="color3">Fore</span>
+								<input type="color" id="fore_color" class="form-control" aria-describedby="color3">
+							</div>
+								<div id="play_box">
+								<span type="button" class="btn btn-primary form-control pull-right" id="play" onClick="createGame()">New Game</span>
+							</div>
+						</div>
+						<!--Color button group ends here-->
+					</form>
+				</div>
+				<!--Input well ends here-->
+				<!--Bootstrap condensed table begins here-->
+				<div class="well well-sm">
+					<table id="table" class="table table-condensed">
+						<thead>
+							<tr>
+								<th>Level</th>
+								<th>Phrase</th>
+								<th>Remaining</th>
+								<th>Answer</th>
+								<th>Status</th>
+							</tr>
+							<tbody id="tabBody">
+							</tbody>
+						</thead>
+					</table>
+				</div>
+				<!--Bootstrap condensed table ends here-->
+			<!--Normal game display div ends here-->	
+			</div> 
+			<div id="editModal" class="modal">
+				<div class="well well-sm" id="editWell">
+					<div class="modal-header">
+						<form class="form-inline" style="margin-top: 1em;" id="guess_inp">
+							<span onClick="cancel()" class="btn btn-sm btn-danger pull-right">X</span>
+						</form>
+					</div>
+					<div class="modal-body form-inline" id="curr_game">
+						<!--Line breaks are included so guesses and the view dont run into one another-->
+						<div class="pull-right" id='guessed'></div><br /><br /><br />
+					</div>
+				</div>
+			</div>
+			<!--Game-view modal ends here-->
+		</div>
+	</body>
+</html>
