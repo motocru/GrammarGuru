@@ -10,6 +10,7 @@ span {
 	word-break: break-all;
 }
 
+
 tbody {
 	margin-top: 1em;
 }
@@ -19,20 +20,39 @@ span.out {
 	font-family: Courier New; monospace;
 }
 
-.hidden {
-	display : none;
+.table>tbody>tr>td,
+.table>tbody>tr>th {
+	border-top: none;
 }
 
 .clickable {
 	cursor: pointer;
 }
 
-div.well {
+.title {
+	font-family: 'Changa', sans-serif;
+	font-size: large;
+}
+
+#login-form {
+	max-width: 600px;
+	min-width: 300px;
+	padding: 15px;
+	background-color: #eee;
+	border-radius: .5em;
 	margin-top: 1em;
 }
 
-div.modal-header {
-	margin-bottom: 1em;
+.background {
+	background-color: #464646;
+	background-image: url('mountDoom.jpg');
+	background-repeat: no-repeat;
+	background-size: 100%;
+	background-position: center top;
+}
+
+div.well {
+	margin-top: 1em;
 }
 
 button.btn {
@@ -47,23 +67,23 @@ button.btn {
 	margin: 3px;
 }
 
-#play {
-	background-color: #1E90FF;
-	color: #F8F8FF;
+.elvish {
+	font-size: large;
 }
 
 #editModal {
+	margin-top: 5em;
 	position: absolute;
-	top : 0;
-	left: 50%;
-	top: 50%;
-	transform: translate(-50%, -50%);
+	width: 95%;
+	height: 100vh;
+	bottom: 20px;
 }
 
-.container {
+/*.container {
 	display: flex;
 	justify-content: space-between;
 }
+*/
 
 .form {
 	letter-spacing : 3px;

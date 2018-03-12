@@ -13,17 +13,35 @@
 		<meta charset="UTF-8">
 		<!--include for CSS file below-->
 		<link rel="stylesheet" href="style.css">
+		<link href="https://fonts.googleapis.com/css?family=Changa" rel="stylesheet">
 		<script src="app.js"></script>
 		<!--<script src="jquery-3.3.1.min.js"></script>-->
-		<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js"></script>
 	</head>
 	<body>
 		<div class="container">
+			<!--begin the login page-->
+			<div id="login">
+				<form id="login-form" class="pull-right">
+					<div class="title">Lord of the Rings Hangman</div>
+					<div class="form-group">
+						<label for="lg_email" class="sr_only">Email </label>
+						<input type="text" class="form-control" id="login_email" placeholder="Username">
+					</div>
+					<div class="form-group">
+						<label for="lg_password" class="sr_only">Password </label>
+						<input type="text" class="form-control" id="login_password" placeholder="Password">
+					</div>
+					<button type="submit" onClick="login(event)" class="btn btn-primary btn-sm">Login
+						<i class="glyphicon glyphicon-chevron-right"></i>
+					</button><br />
+					<center class="title">Cast the one ring into the fires of mount doom</center>
+				</form>
+			</div>
+			<!--End the login page-->
 			<div id="game">
 				<!--input well starts here-->
 				<div class="well well-sm">
 					<form class="form-inline">
-						<div class="container">
 							<!--Font dropdown group starts here-->
 							<div class="form-group" id="font_box">
 								<label for="fonts"><strong>Font</strong> </label>
@@ -31,6 +49,7 @@
 								</select>
 							</div>
 							<!--Font dropdown group ends here-->
+							<span style="display:inline-block; width: 20px;"></span>
 							<!--difficulty dropdown group starts here-->
 							<div class="form-group" id="diff_box">
 								<label for="diffs"><strong>Level</strong> </label>
@@ -38,6 +57,7 @@
 								</select>
 							</div>
 							<!--difficulty dropdown group ends here-->
+							<span style="display:inline-block; width: 20px;"></span>
 							<!--Color button group starts below-->
 							<div class="input-group">
 								<span class="input-group-addon" id="color1">Word </span>
@@ -51,17 +71,17 @@
 								<span class="input-group-addon" id="color3">Fore</span>
 								<input type="color" id="fore_color" class="form-control" aria-describedby="color3">
 							</div>
-								<div id="play_box">
+								<span type="button" class="btn btn-primary form-control" id="defaulter" onClick="defaultChange()">update default settings</span>
+								<span type="button" class="btn btn-primary form-control" id="logout" onClick="logout(event)">Logout</span>
 								<span type="button" class="btn btn-primary form-control pull-right" id="play" onClick="createGame()">New Game</span>
 							</div>
-						</div>
 						<!--Color button group ends here-->
 					</form>
 				</div>
 				<!--Input well ends here-->
 				<!--Bootstrap condensed table begins here-->
-				<div class="well well-sm">
-					<table id="table" class="table table-condensed">
+				<div id="table" class="well well-sm">
+					<table class="table table-condensed">
 						<thead>
 							<tr>
 								<th>Level</th>
@@ -78,14 +98,15 @@
 				<!--Bootstrap condensed table ends here-->
 			<!--Normal game display div ends here-->	
 			</div> 
-			<div id="editModal" class="modal">
+			<div id="editModal">
 				<div class="well well-sm" id="editWell">
-					<div class="modal-header">
+					<div>
 						<form class="form-inline" style="margin-top: 1em;" id="guess_inp">
 							<span onClick="cancel()" class="btn btn-sm btn-danger pull-right">X</span>
 						</form>
 					</div>
-					<div class="modal-body form-inline" id="curr_game">
+					<br />
+					<div class="form-inline" id="curr_game">
 						<!--Line breaks are included so guesses and the view dont run into one another-->
 						<div class="pull-right" id='guessed'></div><br /><br /><br />
 					</div>
