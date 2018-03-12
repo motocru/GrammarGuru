@@ -13,3 +13,14 @@ In class assignment for web applicatioins class.
  to play one game without looking at any other options in the previous menu.
 -Games can be left and returned to at any point allowing for multiple games to be going at one time.
 -this server app uses bootstrap and JQuery
+
+!! IMPORTANT NOTES !!
+-This application currently uses MongoDB and only supports 3 users. 
+ -As per the professor request, new users are unable to be created and sign-ins are only done through one of three possible users
+	1. email: bilbo@mordor.org , password:123123123
+	2. email: frodo@mordor.org , password: 234234234
+	3. email: samwise@mordor.org, password: 345345345
+
+-Games can be created for each user but they cannot be deleted. Default values for the color, difficulty, and font are changed upon pressing 
+ the "change defaults" button and will be present upon logging out and logging back in
+-This application uses session id's and cookies that expire after 10 minutes. After that performing an action will send the user to the login screen
