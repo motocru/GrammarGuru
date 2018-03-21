@@ -15,7 +15,7 @@ In class assignment for web applicatioins class.
 -this server app uses bootstrap and JQuery
 
 !! IMPORTANT NOTES !!
--This application currently uses MongoDB and only supports 3 users. 
+-This application currently uses MongoDB V2.2.33 and is not commpatible with later versions of MongoDB. Game only supports 3 users and new users cannot be added to the game. 
  -As per the professor request, new users are unable to be created and sign-ins are only done through one of three possible users
 	1. email: bilbo@mordor.org , password:123123123
 	2. email: frodo@mordor.org , password: 234234234
