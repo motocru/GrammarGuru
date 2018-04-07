@@ -59,21 +59,26 @@
 							<!--difficulty dropdown group ends here-->
 							<span style="display:inline-block; width: 20px;"></span>
 							<!--Color button group starts below-->
-							<div class="input-group">
+							<div class="input-group" id="col1_box">
 								<span class="input-group-addon" id="color1">Word </span>
 								<input type="color" id="word_color" class="form-control" aria-describedby="color1">
 							</div>
-							<div class="input-group">
+							<div class="input-group" id="col2_box">
 								<span class="input-group-addon" id="color2">Guess</span>
 								<input type="color" id="guess_color" class="form-control" aria-describedby="color2">
 							</div>
-							<div class="input-group">
+							<div class="input-group" id="col3_box">
 								<span class="input-group-addon" id="color3">Fore</span>
 								<input type="color" id="fore_color" class="form-control" aria-describedby="color3">
-							</div>
+							</div id="buttons">
+								<input type="text" id="search" class="form-control">
+								<span type="button" class="btn btn-primary form-control" id="searchBut" onClick="searchUsers()">Search</span>
+								<span type="button" class="btn btn-primary glyphicon glyphicon-refresh"
+								onClick="userList('')" id="refresh"></span>
+								<span style="display: inline-block; width: 10px;"></span>
 								<span type="button" class="btn btn-primary form-control" id="defaulter" onClick="defaultChange()">update default settings</span>
 								<span type="button" class="btn btn-primary form-control" id="logout" onClick="logout(event)">Logout</span>
-								<span type="button" class="btn btn-primary form-control pull-right" id="play" onClick="createGame()">New Game</span>
+								<span type="button" class="btn btn-primary form-control pull-right" id="play" onClick="create()">New Game</span>
 							</div>
 						<!--Color button group ends here-->
 					</form>
@@ -84,11 +89,11 @@
 					<table class="table table-condensed">
 						<thead>
 							<tr>
-								<th>Level</th>
-								<th>Phrase</th>
-								<th>Remaining</th>
-								<th>Answer</th>
-								<th>Status</th>
+								<th id="h0"></th>
+								<th id="h1"></th>
+								<th id="h2"></th>
+								<th id="h3"></th>
+								<th id="h4"></th>
 							</tr>
 							<tbody id="tabBody">
 							</tbody>
@@ -107,8 +112,25 @@
 					</div>
 					<br />
 					<div class="form-inline" id="curr_game">
+						<label class="useLab">First Name: <input type="text" id="fname" class="form-control"/></label>
+						<label class="useLab">Last Name: <input type="text" id="lname" class="form-control"/></label>
+						<label class="useLab">Email: <input type="text" id="email" class="form-control"/></label>
+						<label class="useLab" id="newPassLab">Password: <input type="text" id="newPass" class="form-control"/></label>
+						<label class="useLab">Role: <select class="form-control" name="role_list" id="roles">
+							<option value="ADMIN">ADMIN</option>
+							<option value="USER">USER</option>
+						</select>
+						</label>
+						<div class="checkbox">
+							<label class="useLab">Enabled: <input type="checkbox" id="enabled" class="form-control"/></label>
+						</div>
 						<!--Line breaks are included so guesses and the view dont run into one another-->
 						<div class="pull-right" id='guessed'></div><br /><br /><br />
+						<div id="useCEdit">
+							<center>
+								<span onClick="credit()" class="btn btn-lg btn-primary" id="userBtn">Update</span>
+							</center>
+						</div>
 					</div>
 				</div>
 			</div>

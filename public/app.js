@@ -17,6 +17,7 @@ $(document).ready(function () {
 
 function showModal(game) {
 	if (game) {
+		populateModal(null);
 		modalState.game = game;
 		if (game.status === 'unfinished') {
 			$('#guesses').remove();
@@ -45,27 +46,59 @@ function showModal(game) {
 		$(".flavor").remove();
 		$('#letterModal').remove();
 		$('#guessBtn').remove();
+		$('#curr_game').css('color', '#000000').css('font-family', 'Arial');
+		$('#editWell').css('background', '#f5f5f5');
+	}
+}
+
+function showUser(user) {
+	if (user) {
+		modalState.game = user;
+		$('#editModal').slideDown();
+		$('#game').slideUp();
+		$('#table').slideUp();
+		$('#tabBody').slideUp();
+		populateModal(user);
+	} else {
+		populateModal(null);
+		$('#editModal').slideUp();
+		$('#game').slideDown();
+		$('#table').slideDown();
+		$('#tabBody').slideDown();
 	}
 }
 
 function setPage(page) {
 	modalState.page.page = page;
+	var dispArr = ['font_box', 'diff_box', 'col3_box', 'col2_box', 'col1_box', 
+	'defaulter', 'search', 'searchBut', 'refresh'];
 	if (page == 'login') {
 		$('body').addClass('background');
 	} else {
 		$('body').removeClass('background');
 	}
+	var addresser = '';
 	if (page == 'game') {
+		addresser = 'Current Ring Bearer';
+		$('#player').remove();
+		showModal(null);
+		displayGameBar(dispArr);
+		startUp();
+	}
+	if (page == 'admin') {
+		addresser = 'Current Admin';
 		$('#player').remove();
 		showModal(null);
 		startUp();
+		hidden(dispArr);
 	}
 	modalState.page.pages.forEach( p => {
 		var selector = '#' + p;
 		modalState.page.page == p ? $(selector).show() : $(selector).hide();
 	});
-	if (page == 'game') {
-		$(`<h1 id="player" class="title">Current Ring Bearer: ${modalState.user.email.split(/@/)[0]}</h1>`).prependTo('#game');
+	//if (page == 'admin') $('game').hide();
+	if (page == 'game' || page == 'admin') {
+		$(`<h1 id="player" class="title">${addresser}: ${modalState.user.name.first+" "+modalState.user.name.last}</h1>`).prependTo('#game');
 		$('#table').show();
 	}
 }
@@ -73,7 +106,85 @@ function setPage(page) {
   method to display information associated with the user that signed in, or remain at the login screen*/
 function setUser(user) {
 	modalState.user = user;
-	setPage(user ? 'game' : 'login');
+	if (!user) setPage('login');
+	else setPage((user.role === 'USER') ? 'game' : 'admin');
+}
+
+//hides some selected fields on the navbar that shouldn't be up for the admin
+//also places admin based headers onto the table
+function hidden(arr) {
+	for (var i = 0; i < arr.length; i++) {
+		var selector = '#'+arr[i];
+		$(selector).hide();
+	}
+	$('#search').show();
+	$('#searchBut').show();
+	$('#refresh').show();
+	$('#play').text('Add User');
+	tableHeaders(['first-name', 'last-name', 'email', 'role', 'enabled']);
+}
+//shows features of the game bar that might have been removed from admins logging in
+//also displays the correct user headers on the website
+function displayGameBar(arr) {
+	for (var i = 0; i < arr.length; i++) {
+		var selector = '#'+arr[i];
+		$(selector).show();
+	}
+	$('#search').hide();
+	$('#searchBut').hide();
+	$('#refresh').hide();
+	$('#play').text('New Game');
+	tableHeaders(['Level', 'Phrase', 'Remaining', 'Answer', 'Status']);
+}
+
+function tableHeaders(headers) {
+	for (var i = 0; i < headers.length; i++) {
+		var selector = '#h'+i;
+		$(selector).text(headers[i]);
+	}
+}
+
+function populateModal(user) {
+	if (user) {
+		$('.useLab').show();
+		$('#fname').show().val(user.name.first);
+		$('#lname').show().val(user.name.last);
+		$('#email').show().val(user.email);
+		$('#roles').show().val(user.role);
+		$('#useCEdit').show();
+		$('.checkbox').show();
+		(user.enabled == true) ? $('#enabled').prop("checked", true) : $('#enabled').prop("checked", false);
+		editable(user);
+	} else {
+		$('#useCEdit').hide();
+		$('.checkbox').hide();
+		$('.useLab').hide();
+	}
+}
+
+function editable(user) {
+	if (user.email != '') {
+		$('#fname').prop('disabled', true);
+		$('#lname').prop('disabled', true);
+		$('#email').prop('disabled', true);
+		$('#newPassLab').hide();
+		$('#userBtn').text('Update');
+		if (user.email === modalState.user.email) {
+			$('#roles').prop('disabled', true);
+			$('#enabled').prop('disabled', true);
+		} else {
+			$('#roles').prop('disabled', false);
+			$('#enabled').prop('disabled', false);
+		}
+	} else {
+		$('#fname').prop('disabled', false);
+		$('#lname').prop('disabled', false);
+		$('#email').prop('disabled', false);
+		$('#roles').prop('disabled', false);
+		$('#enabled').prop('disabled', false);
+		$('#newPassLab').show();
+		$('#userBtn').text('Create');
+	}
 }
 
 /*prepends the remaining guesses in front of the guess button in the game-view modal*/
@@ -156,6 +267,23 @@ function createTable(games) {
 	});
 }
 
+function createUserTable(users) {
+	$('#tabBody').empty();
+	users.forEach(user => {
+		var tr = makeUserRow(user);
+		tr.appendTo(tabBody);
+		tr.click(function() {
+			getUser(user._id);
+		});
+	});
+}
+
+function makeUserRow(user) {
+	return $(`<tr id="$user._id}" class="clickable"><td>${user.name.first}</td>
+		<td>${user.name.last}</td>
+		<td>${user.email}</td><td>${user.role}</td><td>${user.enabled}</td></tr>`);
+}
+
 /*gathers the information from the meta that needs to be placed into the html dynamically for it 
   to work. Defaults are also set here as well.*/
 function prepMetaDefaults(meta) {
@@ -192,13 +320,75 @@ function setUserDefaults(defaults) {
 	$('#fonts').val(defaults.font.family);
 }
 
-/*closes the game-view modal*/
-function cancel() {
-	showModal(null);
+function inpVal(email, pass, user) {
+	if (!email.includes('@')) {
+		alert('Your email does not contain the @ symbol');
+		return false;
+	}
+	var local = email.split(/@/)[0];
+	if (local.length < 1) {
+		alert('You did not give a local segment in your email');
+		return false;
+	}
+	if (local.match(/[$#!\?'*&:;<>()\|{}~`'"+=\-_/ ]+/gi)) {
+		alert("no special characters are allowed in the local portion of the email address.");
+		return false;
+	}
+	var domain = email.split(/@/)[1];
+	if (!domain.match(/[a-zA-Z0-9]([a-zA-Z0-9\-])*\.[a-zA-Z0-9]/gi)) {
+		alert('your given email domain does not match email domain standards');
+		return false;
+	}
+
+	if (!pass.match(/[0-9]/gi)) {
+		alert('Your password must contain at least 1 digit');
+		return false;
+	}
+	if (user) {
+		if (user.name.first.match(/[0-9\*\-_$#!@'&:;<>()\|`+=']/gi) || user.name.last.match(/[0-9\*\-_$#!@'&:;<>()\|`+=']/gi)){
+			alert('You cannot place special characters in the name fields');
+			return false;
+		}
+		if (user.name.first.length < 1) {
+			alert('The first name field is empty');
+			return false;
+		}
+		if (user.name.last.length < 1) {
+			alert('The last name field is empty');
+			return false;
+		}
+	}
+	return true;
 }
 
-/*a second colors function was placed here. This was due to problems trying to send a colors function
-  from the client side as the only definition of the colors function was on the server side.*/
+/*closes the game-view modal*/
+function cancel() {
+	if (modalState.user.role === 'USER')showModal(null);
+	else showUser(null);
+}
+
+function create() {
+	if (modalState.user.role === 'ADMIN') {
+		showUser(new User('', '', null, 'USER', '', '', false));
+	}
+	else createGame();
+}
+
+function credit() {
+	if ($('#userBtn').text() === 'Update') {
+		updateUser();
+	} else {
+		createUser();
+	}
+}
+
+function searchUsers() {
+	userList($('#search').val());
+	$('#search').val('');
+}
+
+/*a second set of server side functions are placed here. This was due to problems sending functions
+  from the client side as the only definition of them were on the server side.*/
 function Colors (guess, text, word) {
 	this.guessBackground = guess;
 	this.textBackground = text;
@@ -211,6 +401,15 @@ function Defaults (colors, font, level) {
 	this.level = level;
 }
 
+function User(email, password, defaults, role, fname, lname, enabled) {
+	this.email = email;
+	this.password = password;
+	this.defaults = defaults;
+	this.role = role;
+	this.name = {first : fname, last : lname};
+	this.enabled = enabled;
+}
+
 /*==============================AJAX=====================================*/
 
 function login(evt) {
@@ -220,34 +419,10 @@ function login(evt) {
 	/*clear the values for login and email before checking if what's given is valid*/
 	$('#login_password').val('');
 	$('#login_email').val('');
-
-	/*check the user input for validity*/
-	if (!email.includes('@')) {
-		alert('Your email does not contain the @ symbol');
-		return;
-	}
-	var local = email.split(/@/)[0];
-	if (local.length < 1) {
-		alert('You did not give a local segment in your email');
-		return;
-	}
-	if (local.match(/[$#!\?'*&:;<>()\|{}~`'"+=\-_/ ]+/gi)) {
-		alert("no special characters are allowed in the local portion of the email address.");
-		return;
-	}
-	var domain = email.split(/@/)[1];
-	if (!domain.match(/[a-zA-Z0-9]([a-zA-Z0-9\-])*\.[a-zA-Z0-9]/gi)) {
-		alert('your given email domain does not match email domain standards');
-		return;
-	}
-
-	if (password.length < 8 || !password.match(/[0-9]/gi)) {
-		alert('Your password must be at least 8 characters in length and contain at least 1 digit');
-		return;
-	}		
+	if (!inpVal(email, password, null)) return;
 
 	$.ajax( {
-		url: 'wordgame/api/v2/login',
+		url: 'wordgame/api/v3/login',
 		method: 'POST',
 		data: {'email' : email, 'password' : password},
 		success: function(data, status, xhr) {
@@ -260,7 +435,7 @@ function login(evt) {
 
 function logout(event) {
 	$.ajax( {
-		url: 'wordgame/api/v2/logout',
+		url: 'wordgame/api/v3/logout',
 		method: 'POST',
 		success: () => {setUser(null); modalState.csrf = null;}
 	});
@@ -274,9 +449,9 @@ function createGame() {
 	var colors = new Colors($('#guess_color').val(), $('#fore_color').val(), $('#word_color').val());
 
 	$.ajax( {
-		url: 'wordgame/api/v2/'+modalState.user._id+'?level='+diff,
+		url: 'wordgame/api/v3/'+modalState.user._id+'?level='+diff,
 		method: 'POST',
-		headers: { 'X-font' : font },
+		headers: { 'X-font' : font, 'X-CSRF' : modalState.csrf },
 		data : { colors : colors },
 		success: (game) => {showModal(game); gameList();},
 		error : () => setUser(null)
@@ -286,7 +461,7 @@ function createGame() {
 /*grabs the list of games in the session*/
 function gameList() {
 	$.ajax( {
-		url: 'wordgame/api/v2/'+modalState.user._id,
+		url: 'wordgame/api/v3/'+modalState.user._id,
 		method: 'GET',
 		headers : {'X-CSRF' : modalState.csrf},
 		success: (gameList) => {createTable(gameList);},
@@ -294,10 +469,57 @@ function gameList() {
 	});
 };
 
+function createUser() {
+	var newUser = new User($('#email').val(), $('#newPass').val(), null, $('#roles').val(), 
+		$('#fname').val(), $('#lname').val(), $('#enabled').prop('checked'));
+	if (!inpVal(newUser.email, newUser.password, newUser)) return;
+	$.ajax({
+		url: 'wordgame/api/v3/admins/'+modalState.user._id,
+		method: 'POST',
+		data : {newUser : newUser},
+		headers: {'X-CSRF': modalState.csrf},
+		success: (newUser) => {getUser(newUser._id); userList('');},
+		error: () => setUser(null)
+	});
+};
+
+function userList(filter) {
+	$.ajax({
+		url: 'wordgame/api/v3/admins/'+modalState.user._id+'/users?filter='+filter,
+		method: 'GET',
+		headers: {'X-CSRF' : modalState.csrf},
+		success: (userList) => {createUserTable(userList);},
+		error: () => setUser(null)
+	});
+};
+
+function getUser(uid) {
+	$.ajax({
+		url: 'wordgame/api/v3/admins/'+modalState.user._id+'/'+uid,
+		method: 'GET',
+		headers : {'X-CSRF' : modalState.csrf},
+		success: (user) => {showUser(user)},
+		error : () => setUser(null)
+	});
+};
+
+function updateUser() {
+	var newRole = $('#roles').val()
+	var newEnab = $('#enabled').prop('checked');
+	$.ajax({
+		url: 'wordgame/api/v3/admins/'+modalState.user._id+'/'+modalState.game._id,
+		method: 'PUT',
+		data: {role : newRole, enabled : newEnab},
+		headers : {'X-CSRF' : modalState.csrf},
+		success: (user) => {showUser(user); userList('');},
+		error : () => setUser(null)
+	});
+};
+
 /*gets the specific game using a game id*/
 function getGame(gid) {
 	$.ajax({
-		url: 'wordgame/api/v2/'+modalState.user._id+'/'+gid,
+		url: 'wordgame/api/v3/'+modalState.user._id+'/'+gid,
 		method: 'GET',
 		headers : {'X-CSRF' : modalState.csrf},
 		success: (game) => {showModal(game);},
@@ -317,9 +539,11 @@ function startUp() {
 /*collects the Metadata from the server*/
 function getMeta() {
 	$.ajax ( {
-		url: 'wordgame/api/v2/meta',
+		url: 'wordgame/api/v3/meta',
 		method: 'GET',
-		success: (meta) => {prepMetaDefaults(meta); showModal(null); gameList();}
+		success: (meta) => {prepMetaDefaults(meta); showModal(null); 
+			if (modalState.user.role == 'USER')gameList();
+			else userList('');}
 	});
 };
 
@@ -333,7 +557,7 @@ function guess() {
 	$('#letterModal').remove();
 	$('#guessBtn').remove();
 	$.ajax ({
-		url: 'wordgame/api/v2/'+modalState.user._id+'/'+modalState.game._id+'/guesses?guess='+guess,
+		url: 'wordgame/api/v3/'+modalState.user._id+'/'+modalState.game._id+'/guesses?guess='+guess,
 		method: 'POST',
 		headers : {'X-CSRF' : modalState.csrf},
 		success: (game) => {showModal(game); gameList();},
@@ -350,7 +574,7 @@ function defaultChange() {
 	var def = new Defaults(colors, font, diff);
 
 	$.ajax( {
-		url: 'wordgame/api/v2/'+modalState.user._id+'/defaults',
+		url: 'wordgame/api/v3/'+modalState.user._id+'/defaults',
 		method: 'PUT',
 		data : {defaults : def},
 		headers : {'X-CSRF' : modalState.csrf},

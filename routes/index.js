@@ -3,6 +3,7 @@ var router = express.Router();
 var fs = require('fs');
 var util = require('util');
 var uuid = require('uuid');
+var bcrypt = require('bcrypt');
 var users = require('./users.js');
 var games = require('./games');
 var targets = require('./targets');
@@ -79,9 +80,6 @@ function Game(userId, colors, font, level) {
 	this.timestamp = + new Date();
 	this.status = 'unfinished';
 	this.remaining = this.level.rounds;
-	//var word = wordPick(this.level.minLength, this.level.maxLength);
-	//currentWords[this.id] = word;
-	//this.view = Array(word.length).join('_');
 }
 
 /*function is given the minimum length and maximum length to be used when determining
@@ -103,6 +101,10 @@ function wordPick(minLength, maxLength) {
 String.prototype.setCharAt = function(index, chr) {
 	if (index > this.length) return this.toString();
 	return this.substring(0, index) + chr + this.substring(index+1);
+}
+
+function contains(text, key) {
+	return text.toUpperCase().indexOf(key.toUpperCase()) >=0;
 }
 /*variable of defaults*/
 var Defaults = Metadata.defaults;
@@ -128,40 +130,37 @@ router.get('/wordgame', function(req, res, next) {
 
 /*login function checks database for user and creates a session with cookie and CSRF token. Else it rejects and 
   sends them back with a 403 error*/
-router.post('/wordgame/api/v2/login', function(req, res, next) {
+router.post('/wordgame/api/v3/login', function(req, res, next) {
 	req.session.regenerate(function(err) {
 		users.findByEmail(req.body.email, function(err2, user) {
-			if (user && user.password == req.body.password) {
-				req.session.user = user;
-				req.session.cookie.maxAge = 600000; //sets the maxAge so the cookie expires in 10 minutes
-				delete user.password;
-				userid = user._id;
-				req.session.csrf = uuid();
-				res.set('X-CSRF', req.session.csrf);
-				//fill in CSRF token stuff here
-				res.status(200).send(user);
-			} else {
-				res.status(403).send(new Error('Problem with email/password combo'));
-			}
+			bcrypt.compare(req.body.password, user.password, function (err3, passComp) {
+				if (passComp && user.enabled == true) {
+					if (user.role === 'ADMIN') req.session.admin = user;
+					else req.session.user = user;
+					req.session.cookie.maxAge = 600000; //sets the maxAge so the cookie expires in 10 minutes
+					delete user.password;
+					userid = user._id;
+					req.session.csrf = uuid();
+					res.set('X-CSRF', req.session.csrf);
+					//fill in CSRF token stuff here
+					res.status(200).send(user);
+				} else {
+					res.status(403).send(new Error('Problem with email/password combo'));
+				}
+			});
 		});
 	});
 });
 
 /*logs the user out by regenerating a new sesion*/
-router.post('/wordgame/api/v2/logout', function(req, res, next) {
+router.post('/wordgame/api/v3/logout', function(req, res, next) {
 	req.session.regenerate(function(err) {
 		res.status(200).send(new Error('success'));
 	});
 });
 
-/*GET /wordgame/api/v1/sid*/
-/*router.get('/wordgame/api/v2/userid', function(req, res, next) {
-	res.status(200);
-	res.send(userid);
-});*/
-
 /*GET /wordgame/api/v1/meta*/
-router.get('/wordgame/api/v2/meta', function(req, res, next) {
+router.get('/wordgame/api/v3/meta', function(req, res, next) {
 	if (!Metadata) {
 		res.status(200).send(new Error('Metadata object not found'));
 	}
@@ -169,7 +168,7 @@ router.get('/wordgame/api/v2/meta', function(req, res, next) {
 });
 
 /*GET /wordgame/api/v1/meta/fonts*/
-router.get('/wordgame/api/v2/meta/fonts', function(req, res, next) {
+router.get('/wordgame/api/v3/meta/fonts', function(req, res, next) {
 	res.status(200);
 	if (!Metadata.fonts) {
 		res.status(200).send(new Error('Metadata fonts object does not exist'));
@@ -183,11 +182,11 @@ router.get('/wordgame/api/v2/meta/fonts', function(req, res, next) {
 
 /*function checks if the given userid is currently authenticated to access andy information beyond this point
   If they are it goes to the next function. Otherwise it denys access.*/
-router.all('/wordgame/api/v2/:userid', function(req, res, next) {
+router.all('/wordgame/api/v3/:userid', function(req, res, next) {
 	users.findById(req.params.userid, function(err, pathUser) {
 		var authenticated = req.session.user;
 		var token = req.get('X-CSRF');
-		if (authenticated && pathUser && authenticated._id == pathUser._id && token == req.session.csrf) {
+		if (authenticated && pathUser && authenticated._id == pathUser._id && authenticated.enabled == true && token == req.session.csrf) {
 			next();
 		} else {
 			res.status(403).send(new Error('Not authenticated'));
@@ -196,20 +195,15 @@ router.all('/wordgame/api/v2/:userid', function(req, res, next) {
 });
 
 /*GET /wordgame/api/v1/:sid*/
-router.get('/wordgame/api/v2/:userid', function(req, res, next) {
+router.get('/wordgame/api/v3/:userid', function(req, res, next) {
 	games.findByOwner(req.params.userid, function(err, gameList) {
 		if (err) throw err;
 		res.status(200).send(gameList);
 	});
-	/*var result = [];
-	for (var k in gameDB) {
-		result.push(gameDB[k]);
-	}
-	res.status(200).send(result);*/
 });
 
 /*POST /wordgame/api/v1/sid*/
-router.post('/wordgame/api/v2/:userid', function(req, res, next) {
+router.post('/wordgame/api/v3/:userid', function(req, res, next) {
 	var game = new Game(req.params.userid, req.body.colors, req.get('X-font'), req.query.level);
 	if (!game) {
 		res.status(200).send(new Error('Could not create a new game'));
@@ -225,17 +219,11 @@ router.post('/wordgame/api/v2/:userid', function(req, res, next) {
 });
 
 /*GET /wordgame/api/v1/:sid/:gid*/
-router.get('/wordgame/api/v2/:userid/:gid', function(req, res, next) {
+router.get('/wordgame/api/v3/:userid/:gid', function(req, res, next) {
 	games.find(req.params.userid, req.params.gid, function(err, result) {
 		if (err) res.status(200).send(new Error('Could not find game'));
 		res.status(200).send(result);
 	});
-	//var game = req.params.gid;
-	//var result = gameDB[game] || {status : 'No such game'};
-	//if (!result) {
-	//	res.status(200).send(new Error('Could not find game.'));
-	//}
-	//res.status(200).send(result);
 });
 
 
@@ -245,7 +233,7 @@ router.get('/wordgame/api/v2/:userid/:gid', function(req, res, next) {
   when won or lost and places the target word and time to complete function inside of 
   the game when it is completed*/
 /*GET /wordgame/api/v1/sid*/
-router.post('/wordgame/api/v2/:userid/:gid/guesses', function(req, res, next) {
+router.post('/wordgame/api/v3/:userid/:gid/guesses', function(req, res, next) {
 	games.find(req.params.userid, req.params.gid, function(err, result) {
 		if (err) res.status(200).send(new Error('Could not find the game'));
 		var guess = req.query.guess.toLowerCase();
@@ -278,7 +266,7 @@ router.post('/wordgame/api/v2/:userid/:gid/guesses', function(req, res, next) {
 /*grabs the passed defaults object and then matches level and fonts to the corresponding
   Metadata fields creating a matching defaults object withthe given parameters.
   It is then stored into the database under that user profile and the updated default object is returned*/
-router.put('/wordgame/api/v2/:userid/defaults', function(req, res, next) {
+router.put('/wordgame/api/v3/:userid/defaults', function(req, res, next) {
 	var passDef = req.body.defaults;
 	for (var k in Metadata.fonts) {
 		if (Metadata.fonts[k].family === passDef.font) {
@@ -295,6 +283,59 @@ router.put('/wordgame/api/v2/:userid/defaults', function(req, res, next) {
 	users.updateDefaults(req.session.user._id, passDef, function(err,result) {
 		if (err) res.status(200).send(new Error('Invalid Defaults'));
 		res.status(200).send(result.defaults);
+	});
+});
+
+router.all('/wordgame/api/v3/admins/:aid', function(req, res, next) {
+	users.findById(req.params.aid, function(err, pathUser) {
+		var authenticated = req.session.admin;
+		var token = req.get('X-CSRF');
+		if (authenticated && pathUser && authenticated._id == pathUser._id && authenticated.enabled && token == req.session.csrf) {
+			next();
+		} else {
+			res.status(403).send(new Error('Not authenticated'));
+		}
+	});
+});
+
+router.post('/wordgame/api/v3/admins/:aid', function(req, res, next) {
+	var newUser = req.body.newUser;
+	if (newUser.defaults == '') newUser.defaults = Defaults;
+	newUser.enabled = (newUser.enabled === 'true') ? true : false;
+	users.save(newUser, function(err, result) {
+		if (err) res.status(200).send(new Error('Could not create new User'));
+		res.status(200).send(result);
+	});
+});
+
+router.get('/wordgame/api/v3/admins/:aid/users', function(req, res, next) {
+	var filter = req.query.filter || '';
+	users.findAll(function(err, result) {
+		if (err) res.status(200).send(new Error('Could not collect the list of users'));
+		if (filter) {
+			result = result.filter(user => (
+				user.email==filter || contains(user.name.first, filter) || contains(user.name.last, filter)
+				));
+		}
+		res.status(200).send(result);
+	});
+});
+
+router.get('/wordgame/api/v3/admins/:aid/:userid', function(req, res, next) {
+	users.findById(req.params.userid, function(err, result) {
+		if (err) res.status(200).send(new Error('Could not find the user'));
+		res.status(200).send(result);
+	});
+});
+
+router.put('/wordgame/api/v3/admins/:aid/:userid', function(req, res, next) {
+	var enab = (req.body.enabled === 'true') ? true : false;
+	users.updateUser(req.params.userid, req.body.role, enab, function(err, result) {
+		if (err) {
+			console.log('db insertion error');
+			res.status(200).send(new Error('Error updating the user information'));
+		}
+		res.status(200).send(result);
 	});
 });
 
